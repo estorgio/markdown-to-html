@@ -1,0 +1,16 @@
+{
+  "name": "markdown-to-html",
+  "version": "1.0.0",
+  "description": "Convert markdown files to HTML on the fly.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Fortunato Estorgio",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "chokidar": "^2.0.4",
+    "showdown": "^1.9.0"
+  }
+}
