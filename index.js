@@ -13,22 +13,38 @@ const outputDirectory = path.resolve(process.cwd(), 'output');
 
 console.log('Markdown compiler has been started');
 
-chokidar.watch(process.cwd())
-  .on('add', path => convertToHTML(path))
-  .on('change', path => convertToHTML(path));
+chokidar.watch(process.cwd(), { ignored: /(\/output\/)|(\\output\\)/ })
+  .on('add', path => processFile(path))
+  .on('change', path => processFile(path));
+
+async function processFile(filePath) {
+
+  if (/\/node_modules\//.test(filePath)) return;
+  if (/\/output\//.test(filePath)) return;
+
+  await sleep(1000);
+
+  switch (path.extname(filePath).toLowerCase()) {
+    case '.md':
+      await convertToHTML(filePath);
+      break;
+    case '.jpg':
+    case '.jpeg':
+    case '.png':
+    case '.gif':
+      await copyImageToOutput(filePath);
+  }
+}
 
 async function convertToHTML(markdownFile) {
   await sleep(1000);
 
-  if (path.extname(markdownFile) !== '.md') return;
-  if (/\/node_modules\//.test('markdownFile')) return;
-
   console.log('Converting ', markdownFile);
   const fname = path.basename(markdownFile, '.md');
-  
+
   let outfile = path.resolve(outputDirectory,
     path.relative(process.cwd(), markdownFile));
-  outfile = path.join(path.dirname(outfile), 
+  outfile = path.join(path.dirname(outfile),
     path.parse(outfile).name + '.html');
   fs.mkdirSync(path.dirname(outfile), { recursive: true });
 
@@ -40,6 +56,18 @@ async function convertToHTML(markdownFile) {
   htmlContent = injectCSS(htmlContent, customCSSCode);
   htmlContent = convertMDLinksToHtml(htmlContent, markdownFile);
   fs.writeFileSync(outfile, htmlContent);
+}
+
+async function copyImageToOutput(filePath) {
+  console.log('Copying image to output dir:', filePath);
+
+  let outfile = path.resolve(outputDirectory,
+    path.relative(process.cwd(), filePath));
+  // outfile = path.join(path.dirname(outfile),
+  //   path.parse(outfile).name + '.html');
+  fs.mkdirSync(path.dirname(outfile), { recursive: true });
+
+  fs.copyFileSync(filePath, outfile);
 }
 
 function injectCSS(htmlSource, cssSource) {
