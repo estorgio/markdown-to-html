@@ -31,6 +31,7 @@ async function convertToHTML(markdownFile) {
   const contents = fs.readFileSync(markdownFile, { encoding: 'utf8'});
   let htmlContent = converter.makeHtml(contents);
   htmlContent = injectCSS(htmlContent, customCSSCode);
+  htmlContent = convertMDLinksToHtml(htmlContent, markdownFile);
   fs.writeFileSync(outfile, htmlContent);
 }
 
@@ -50,4 +51,24 @@ function loadCustomCSS(){
 
 function sleep(ms) {
   return new Promise((resolve, reject) => setTimeout(resolve, ms));
+}
+
+function convertMDLinksToHtml(htmlSource, filePath) {
+  const $source = $.load(htmlSource);
+  $source('a').each((index, element) => {
+    const href = $(element).attr('href');
+
+    if (href.indexOf('http://') >= 0 || href.indexOf('https://') >= 0)
+      return;
+
+    const localPath = path.resolve(path.dirname(filePath), href);
+    if (!fs.existsSync(localPath) || path.extname(localPath).toLowerCase() !== '.md') 
+      return;
+
+    const parsedHref = path.parse(href);
+    const newHref = path.join(parsedHref.dir, parsedHref.name + '.html');
+
+    $(element).attr('href', newHref);
+  });
+  return $source.html();
 }
