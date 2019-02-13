@@ -9,6 +9,8 @@ const customCSSCode = loadCustomCSS();
 
 showdown.setOption('completeHTMLDocument', true);
 
+const outputDirectory = path.resolve(process.cwd(), 'output');
+
 console.log('Markdown compiler has been started');
 
 chokidar.watch(process.cwd())
@@ -23,12 +25,17 @@ async function convertToHTML(markdownFile) {
 
   console.log('Converting ', markdownFile);
   const fname = path.basename(markdownFile, '.md');
-  const outfile = path.join(path.dirname(markdownFile), fname) + '.html';
   
+  let outfile = path.resolve(outputDirectory,
+    path.relative(process.cwd(), markdownFile));
+  outfile = path.join(path.dirname(outfile), 
+    path.parse(outfile).name + '.html');
+  fs.mkdirSync(path.dirname(outfile), { recursive: true });
+
   const converter = new showdown.Converter();
   converter.setFlavor('github');
 
-  const contents = fs.readFileSync(markdownFile, { encoding: 'utf8'});
+  const contents = fs.readFileSync(markdownFile, { encoding: 'utf8' });
   let htmlContent = converter.makeHtml(contents);
   htmlContent = injectCSS(htmlContent, customCSSCode);
   htmlContent = convertMDLinksToHtml(htmlContent, markdownFile);
@@ -44,7 +51,7 @@ function injectCSS(htmlSource, cssSource) {
   return $source.html();
 }
 
-function loadCustomCSS(){
+function loadCustomCSS() {
   const css = fs.readFileSync(path.resolve(__dirname, 'style.css'));
   return css;
 }
@@ -62,7 +69,7 @@ function convertMDLinksToHtml(htmlSource, filePath) {
       return;
 
     const localPath = path.resolve(path.dirname(filePath), href);
-    if (!fs.existsSync(localPath) || path.extname(localPath).toLowerCase() !== '.md') 
+    if (!fs.existsSync(localPath) || path.extname(localPath).toLowerCase() !== '.md')
       return;
 
     const parsedHref = path.parse(href);
