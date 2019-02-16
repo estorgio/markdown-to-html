@@ -77,3 +77,33 @@ pre > code {
 code {
   font-family: SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
 }
+table {
+  display: block;
+  overflow: auto;
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin-bottom: 16px;
+  margin-top: 0;
+}
+thead {
+  display: table-header-group;
+  vertical-align: middle;
+  border-color: inherit;
+}
+table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+table td, table th {
+  border: 1px solid #dfe2e5;
+  padding: 6px 13px;
+}
+tbody {
+  display: table-row-group;
+  vertical-align: middle;
+  border-color: inherit;
+}
+table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
