@@ -5,8 +5,6 @@ const chokidar = require('chokidar');
 const showdown = require('showdown');
 const $ = require('cheerio');
 
-const customCSSCode = loadCustomCSS();
-
 showdown.setOption('completeHTMLDocument', true);
 
 const outputDirectory = path.resolve(process.cwd(), 'output');
@@ -51,9 +49,9 @@ async function convertToHTML(markdownFile) {
   const converter = new showdown.Converter();
   converter.setFlavor('github');
 
-  const contents = fs.readFileSync(markdownFile, { encoding: 'utf8' });
-  let htmlContent = converter.makeHtml(contents);
-  htmlContent = injectCSS(htmlContent, customCSSCode);
+  const content = fs.readFileSync(markdownFile, 'utf8');
+  let htmlContent = converter.makeHtml(content);
+  htmlContent = loadTemplate(htmlContent);
   htmlContent = convertMDLinksToHtml(htmlContent, markdownFile);
   fs.writeFileSync(outfile, htmlContent);
 }
@@ -70,18 +68,13 @@ async function copyImageToOutput(filePath) {
   fs.copyFileSync(filePath, outfile);
 }
 
-function injectCSS(htmlSource, cssSource) {
-  const $source = $.load(htmlSource);
-  const $head = $source('head');
-  $head.append(`<style>\n${cssSource}\n</style>`);
-  const originalBody = $source('body');
-  $source('body').html(`<div class="container">${originalBody}</div>`)
+function loadTemplate(content) {
+  const html = fs.readFileSync(path.resolve(__dirname, 'template.html'), 'utf-8');
+  const css = fs.readFileSync(path.resolve(__dirname, 'style.css'), 'utf8');
+  const $source = $.load(html);
+  $source('head').append(`<style>${css}</style>`);
+  $source('body>div.container').html(content);
   return $source.html();
-}
-
-function loadCustomCSS() {
-  const css = fs.readFileSync(path.resolve(__dirname, 'style.css'));
-  return css;
 }
 
 function sleep(ms) {
