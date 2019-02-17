@@ -12,6 +12,7 @@
     "cheerio": "^1.0.0-rc.2",
     "chokidar": "^2.1.1",
     "highlight.js": "^9.14.2",
-    "markdown-it": "^8.4.2"
+    "markdown-it": "^8.4.2",
+    "markdown-it-anchor": "^5.0.2"
   }
 }

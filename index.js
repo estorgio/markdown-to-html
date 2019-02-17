@@ -6,6 +6,8 @@ const hljs = require('highlight.js');
 const md = require('markdown-it')(getMarkdownOptions());
 const $ = require('cheerio');
 
+md.use(require('markdown-it-anchor'));
+
 const outputDirectory = path.resolve(process.cwd(), 'output');
 
 console.log('Markdown compiler has been started');
