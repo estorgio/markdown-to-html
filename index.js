@@ -67,7 +67,9 @@ async function copyImageToOutput(filePath) {
 function loadTemplate(content) {
   const html = fs.readFileSync(path.resolve(__dirname, 'template.html'), 'utf-8');
   const css = fs.readFileSync(path.resolve(__dirname, 'style.css'), 'utf8');
+  const githubSyntaxHighlight = fs.readFileSync(path.resolve(__dirname, 'github-gist.css'), 'utf8');
   const $source = $.load(html);
+  $source('head').append(`<style>${githubSyntaxHighlight}</style>`);
   $source('head').append(`<style>${css}</style>`);
   $source('body>div.container').html(content);
   return $source.html();
