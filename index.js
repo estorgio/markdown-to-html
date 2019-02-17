@@ -2,10 +2,9 @@
 const fs = require('fs');
 const path = require('path');
 const chokidar = require('chokidar');
-const showdown = require('showdown');
+const hljs = require('highlight.js');
+const md = require('markdown-it')(getMarkdownOptions());
 const $ = require('cheerio');
-
-showdown.setOption('completeHTMLDocument', true);
 
 const outputDirectory = path.resolve(process.cwd(), 'output');
 
@@ -46,13 +45,12 @@ async function convertToHTML(markdownFile) {
     path.parse(outfile).name + '.html');
   fs.mkdirSync(path.dirname(outfile), { recursive: true });
 
-  const converter = new showdown.Converter();
-  converter.setFlavor('github');
-
   const content = fs.readFileSync(markdownFile, 'utf8');
-  let htmlContent = converter.makeHtml(content);
+  
+  let htmlContent = md.render(content);
   htmlContent = loadTemplate(htmlContent);
   htmlContent = convertMDLinksToHtml(htmlContent, markdownFile);
+  
   fs.writeFileSync(outfile, htmlContent);
 }
 
@@ -61,8 +59,6 @@ async function copyImageToOutput(filePath) {
 
   let outfile = path.resolve(outputDirectory,
     path.relative(process.cwd(), filePath));
-  // outfile = path.join(path.dirname(outfile),
-  //   path.parse(outfile).name + '.html');
   fs.mkdirSync(path.dirname(outfile), { recursive: true });
 
   fs.copyFileSync(filePath, outfile);
@@ -99,4 +95,17 @@ function convertMDLinksToHtml(htmlSource, filePath) {
     $(element).attr('href', newHref);
   });
   return $source.html();
+}
+
+function getMarkdownOptions() {
+  return {
+    highlight: function (str, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return hljs.highlight(lang, str).value;
+        } catch (__) {}
+      }
+      return '';
+    }
+  };
 }
